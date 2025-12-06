@@ -31,7 +31,7 @@ import authCover from "@/assets/image/authcover.jpg";
             </div>
         </div>
         <div class="bg-muted relative hidden lg:block">
-            <div class="absolute inset-0 bg-primaryl/75"></div>
+            <div class="absolute inset-0 bg-primary/75"></div>
             <img :src="authCover" alt="" class="h-full object-cover" />
         </div>
     </div>

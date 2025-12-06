@@ -8,11 +8,11 @@ export function useQueryLists() {
   });
 }
 
-export function useQueryList(id: Ref<string> | string) {
+export function useQueryList(id: Ref<string | undefined> | ComputedRef<string | undefined>) {
   return useQuery({
     queryKey: ["list", id],
-    queryFn: () => getList(typeof id === "string" ? id : id.value),
-    enabled: () => !!(typeof id === "string" ? id : id.value),
+    queryFn: () => getList(id.value!),
+    enabled: () => !!id.value,
   });
 }
 

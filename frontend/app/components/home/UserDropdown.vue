@@ -5,11 +5,14 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
 const props = defineProps<{
   userName: string;
+  userEmail?: string;
 }>();
 
 const initial = computed(() => props.userName?.charAt(0).toUpperCase() ?? "?");
@@ -29,7 +32,12 @@ const handleLogout = () => {
         </Avatar>
       </button>
     </DropdownMenuTrigger>
-    <DropdownMenuContent align="end">
+    <DropdownMenuContent align="end" class="w-56">
+      <DropdownMenuLabel>
+        <p class="font-medium">{{ userName }}</p>
+        <p class="text-xs text-muted-foreground font-normal">{{ userEmail }}</p>
+      </DropdownMenuLabel>
+      <DropdownMenuSeparator />
       <DropdownMenuItem @click="handleLogout">
         <LogOut class="size-4 mr-2" />
         Keluar
