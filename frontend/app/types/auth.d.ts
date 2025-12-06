@@ -20,3 +20,8 @@ interface LoginResponse {
   token: string;
   user: UserInfo;
 }
+
+interface MeResponse {
+  message: string;
+  user: UserInfo;
+}

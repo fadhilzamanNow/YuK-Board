@@ -24,3 +24,15 @@ export async function postRegister(params: RegisterParams): Promise<LoginRespons
     throw err;
   }
 }
+
+export async function getMe(): Promise<MeResponse> {
+  try {
+    const response = await baseApi().get("/me");
+    return response.data;
+  } catch (err) {
+    if (err instanceof AxiosError && err.response) {
+      throw err.response.data as CustomErrorResponse;
+    }
+    throw err;
+  }
+}
