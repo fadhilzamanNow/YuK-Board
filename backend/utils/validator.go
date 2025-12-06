@@ -16,20 +16,22 @@ func ValidationError(err error) fiber.Map {
 		field := strings.ToLower(e.Field())
 		switch e.Tag() {
 		case "required":
-			errors[field] = field + " is required"
+			errors[field] = field + " wajib diisi"
 		case "email":
-			errors[field] = field + " must be a valid email"
+			errors[field] = field + " harus berupa email yang valid"
 		case "min":
-			errors[field] = field + " must be at least " + e.Param() + " characters"
+			errors[field] = field + " minimal " + e.Param() + " karakter"
 		case "max":
-			errors[field] = field + " must be at most " + e.Param() + " characters"
+			errors[field] = field + " maksimal " + e.Param() + " karakter"
+		case "oneof":
+			errors[field] = field + " tidak valid"
 		default:
-			errors[field] = field + " is invalid"
+			errors[field] = field + " tidak valid"
 		}
 	}
 
 	return fiber.Map{
-		"message": "Validation failed",
+		"message": "Validasi gagal",
 		"errors":  errors,
 	}
 }

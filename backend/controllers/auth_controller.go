@@ -22,7 +22,7 @@ type LoginInput struct {
 func Register(c *fiber.Ctx) error {
 	var input RegisterInput
 	if err := c.BodyParser(&input); err != nil {
-		return c.Status(400).JSON(fiber.Map{"message": "Invalid input", "errors": nil})
+		return c.Status(400).JSON(fiber.Map{"message": "Input tidak valid", "errors": nil})
 	}
 
 	if err := utils.Validate.Struct(&input); err != nil {
@@ -38,19 +38,19 @@ func Register(c *fiber.Ctx) error {
 
 	if err := config.DB.Create(&user).Error; err != nil {
 		return c.Status(400).JSON(fiber.Map{
-			"message": "Email already exists",
-			"errors":  fiber.Map{"Email": "Email already exists"},
+			"message": "Email sudah terdaftar",
+			"errors":  fiber.Map{"Email": "Email sudah terdaftar"},
 		})
 	}
 
 	token, _ := utils.GenerateToken(user.ID)
-	return c.Status(201).JSON(fiber.Map{"message": "Registration successful", "token": token, "user": user})
+	return c.Status(201).JSON(fiber.Map{"message": "Registrasi berhasil", "token": token, "user": user})
 }
 
 func Login(c *fiber.Ctx) error {
 	var input LoginInput
 	if err := c.BodyParser(&input); err != nil {
-		return c.Status(400).JSON(fiber.Map{"message": "Invalid input", "errors": nil})
+		return c.Status(400).JSON(fiber.Map{"message": "Input tidak valid", "errors": nil})
 	}
 
 	if err := utils.Validate.Struct(&input); err != nil {
@@ -59,15 +59,15 @@ func Login(c *fiber.Ctx) error {
 
 	var user models.User
 	if err := config.DB.Where("email = ?", input.Email).First(&user).Error; err != nil {
-		return c.Status(401).JSON(fiber.Map{"message": "Your email or password is wrong", "errors": nil})
+		return c.Status(401).JSON(fiber.Map{"message": "Email atau password salah", "errors": nil})
 	}
 
 	if !utils.CheckPassword(input.Password, user.PasswordHash) {
-		return c.Status(401).JSON(fiber.Map{"message": "Your email or password is wrong", "errors": nil})
+		return c.Status(401).JSON(fiber.Map{"message": "Email atau password salah", "errors": nil})
 	}
 
 	token, _ := utils.GenerateToken(user.ID)
-	return c.JSON(fiber.Map{"message": "Login successful", "token": token, "user": user})
+	return c.JSON(fiber.Map{"message": "Login berhasil", "token": token, "user": user})
 }
 
 func Me(c *fiber.Ctx) error {
@@ -75,8 +75,8 @@ func Me(c *fiber.Ctx) error {
 
 	var user models.User
 	if err := config.DB.First(&user, "id = ?", userID).Error; err != nil {
-		return c.Status(404).JSON(fiber.Map{"message": "User not found", "errors": nil})
+		return c.Status(404).JSON(fiber.Map{"message": "Pengguna tidak ditemukan", "errors": nil})
 	}
 
-	return c.JSON(fiber.Map{"message": "Success", "user": user})
+	return c.JSON(fiber.Map{"message": "Berhasil", "user": user})
 }

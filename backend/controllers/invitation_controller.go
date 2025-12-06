@@ -14,50 +14,44 @@ type InviteInput struct {
 	Email string `json:"email" validate:"required,email"`
 }
 
-// Owner invites user by email
 func InviteUser(c *fiber.Ctx) error {
 	userID := c.Locals("userID").(uuid.UUID)
 	listID, err := uuid.Parse(c.Params("id"))
 	if err != nil {
-		return c.Status(400).JSON(fiber.Map{"message": "Invalid list ID", "errors": nil})
+		return c.Status(400).JSON(fiber.Map{"message": "ID daftar tidak valid", "errors": nil})
 	}
 
-	// Check if user is owner
 	var list models.TodoList
 	if err := config.DB.First(&list, "id = ? AND owner_id = ?", listID, userID).Error; err != nil {
-		return c.Status(403).JSON(fiber.Map{"message": "Access denied", "errors": nil})
+		return c.Status(403).JSON(fiber.Map{"message": "Akses ditolak", "errors": nil})
 	}
 
 	var input InviteInput
 	if err := c.BodyParser(&input); err != nil {
-		return c.Status(400).JSON(fiber.Map{"message": "Invalid input", "errors": nil})
+		return c.Status(400).JSON(fiber.Map{"message": "Input tidak valid", "errors": nil})
 	}
 
 	if err := utils.Validate.Struct(&input); err != nil {
 		return c.Status(400).JSON(utils.ValidationError(err))
 	}
 
-	// Find invitee by email
 	var invitee models.User
 	if err := config.DB.First(&invitee, "email = ?", input.Email).Error; err != nil {
-		return c.Status(404).JSON(fiber.Map{"message": "User not found", "errors": nil})
+		return c.Status(404).JSON(fiber.Map{"message": "Pengguna tidak ditemukan", "errors": nil})
 	}
 
-	// Can't invite yourself
 	if invitee.ID == userID {
-		return c.Status(400).JSON(fiber.Map{"message": "Cannot invite yourself", "errors": nil})
+		return c.Status(400).JSON(fiber.Map{"message": "Tidak dapat mengundang diri sendiri", "errors": nil})
 	}
 
-	// Check if already a member
 	var existingMember models.ListMember
 	if err := config.DB.First(&existingMember, "todo_list_id = ? AND user_id = ?", listID, invitee.ID).Error; err == nil {
-		return c.Status(400).JSON(fiber.Map{"message": "User is already a member", "errors": nil})
+		return c.Status(400).JSON(fiber.Map{"message": "Pengguna sudah menjadi anggota", "errors": nil})
 	}
 
-	// Check if pending invitation exists
 	var existingInvite models.ListInvitation
 	if err := config.DB.First(&existingInvite, "todo_list_id = ? AND invitee_id = ? AND status = ?", listID, invitee.ID, models.StatusPending).Error; err == nil {
-		return c.Status(400).JSON(fiber.Map{"message": "Invitation already sent", "errors": nil})
+		return c.Status(400).JSON(fiber.Map{"message": "Undangan sudah dikirim", "errors": nil})
 	}
 
 	invitation := models.ListInvitation{
@@ -69,10 +63,9 @@ func InviteUser(c *fiber.Ctx) error {
 	}
 	config.DB.Create(&invitation)
 
-	return c.Status(201).JSON(fiber.Map{"message": "Invitation sent", "invitation": invitation})
+	return c.Status(201).JSON(fiber.Map{"message": "Undangan berhasil dikirim", "invitation": invitation})
 }
 
-// Get pending invitations for current user
 func GetMyInvitations(c *fiber.Ctx) error {
 	userID := c.Locals("userID").(uuid.UUID)
 
@@ -83,29 +76,26 @@ func GetMyInvitations(c *fiber.Ctx) error {
 		Preload("Inviter").
 		Find(&invitations)
 
-	return c.JSON(fiber.Map{"message": "Success", "invitations": invitations})
+	return c.JSON(fiber.Map{"message": "Berhasil", "invitations": invitations})
 }
 
-// Accept invitation
 func AcceptInvitation(c *fiber.Ctx) error {
 	userID := c.Locals("userID").(uuid.UUID)
 	inviteID, err := uuid.Parse(c.Params("id"))
 	if err != nil {
-		return c.Status(400).JSON(fiber.Map{"message": "Invalid invitation ID", "errors": nil})
+		return c.Status(400).JSON(fiber.Map{"message": "ID undangan tidak valid", "errors": nil})
 	}
 
 	var invitation models.ListInvitation
 	if err := config.DB.First(&invitation, "id = ? AND invitee_id = ? AND status = ?", inviteID, userID, models.StatusPending).Error; err != nil {
-		return c.Status(404).JSON(fiber.Map{"message": "Invitation not found", "errors": nil})
+		return c.Status(404).JSON(fiber.Map{"message": "Undangan tidak ditemukan", "errors": nil})
 	}
 
-	// Update invitation status
 	now := time.Now()
 	invitation.Status = models.StatusAccepted
 	invitation.RespondedAt = &now
 	config.DB.Save(&invitation)
 
-	// Add user to list members
 	member := models.ListMember{
 		TodoListID: invitation.TodoListID,
 		UserID:     userID,
@@ -113,20 +103,19 @@ func AcceptInvitation(c *fiber.Ctx) error {
 	}
 	config.DB.Create(&member)
 
-	return c.JSON(fiber.Map{"message": "Invitation accepted"})
+	return c.JSON(fiber.Map{"message": "Undangan diterima"})
 }
 
-// Decline invitation
 func DeclineInvitation(c *fiber.Ctx) error {
 	userID := c.Locals("userID").(uuid.UUID)
 	inviteID, err := uuid.Parse(c.Params("id"))
 	if err != nil {
-		return c.Status(400).JSON(fiber.Map{"message": "Invalid invitation ID", "errors": nil})
+		return c.Status(400).JSON(fiber.Map{"message": "ID undangan tidak valid", "errors": nil})
 	}
 
 	var invitation models.ListInvitation
 	if err := config.DB.First(&invitation, "id = ? AND invitee_id = ? AND status = ?", inviteID, userID, models.StatusPending).Error; err != nil {
-		return c.Status(404).JSON(fiber.Map{"message": "Invitation not found", "errors": nil})
+		return c.Status(404).JSON(fiber.Map{"message": "Undangan tidak ditemukan", "errors": nil})
 	}
 
 	now := time.Now()
@@ -134,20 +123,19 @@ func DeclineInvitation(c *fiber.Ctx) error {
 	invitation.RespondedAt = &now
 	config.DB.Save(&invitation)
 
-	return c.JSON(fiber.Map{"message": "Invitation declined"})
+	return c.JSON(fiber.Map{"message": "Undangan ditolak"})
 }
 
-// Owner cancels invitation
 func CancelInvitation(c *fiber.Ctx) error {
 	userID := c.Locals("userID").(uuid.UUID)
 	inviteID, err := uuid.Parse(c.Params("id"))
 	if err != nil {
-		return c.Status(400).JSON(fiber.Map{"message": "Invalid invitation ID", "errors": nil})
+		return c.Status(400).JSON(fiber.Map{"message": "ID undangan tidak valid", "errors": nil})
 	}
 
 	var invitation models.ListInvitation
 	if err := config.DB.First(&invitation, "id = ? AND inviter_id = ? AND status = ?", inviteID, userID, models.StatusPending).Error; err != nil {
-		return c.Status(404).JSON(fiber.Map{"message": "Invitation not found", "errors": nil})
+		return c.Status(404).JSON(fiber.Map{"message": "Undangan tidak ditemukan", "errors": nil})
 	}
 
 	now := time.Now()
@@ -155,5 +143,5 @@ func CancelInvitation(c *fiber.Ctx) error {
 	invitation.RespondedAt = &now
 	config.DB.Save(&invitation)
 
-	return c.JSON(fiber.Map{"message": "Invitation cancelled"})
+	return c.JSON(fiber.Map{"message": "Undangan dibatalkan"})
 }
