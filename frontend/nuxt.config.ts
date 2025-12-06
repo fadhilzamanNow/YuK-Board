@@ -4,7 +4,7 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
   devtools: { enabled: true },
-  modules: ["@nuxt/fonts", "shadcn-nuxt"],
+  modules: ["@nuxt/fonts", "shadcn-nuxt", "@nuxtjs/color-mode"],
   vite: {
     plugins: [tailwindcss()],
   },
@@ -20,5 +20,8 @@ export default defineNuxtConfig({
     public: {
       BACKEND_URL: import.meta.env.NUXT_BACKEND_URL,
     },
+  },
+  colorMode: {
+    classSuffix: "",
   },
 });

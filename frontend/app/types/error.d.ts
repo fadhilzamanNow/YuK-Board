@@ -1,6 +1,4 @@
-interface CustomErrorResponse<T> {
+interface CustomErrorResponse {
   message: string;
-  errors: {
-    [key: T]: string;
-  };
+  errors: Record<string, string>;
 }

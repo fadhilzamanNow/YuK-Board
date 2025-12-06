@@ -1,25 +1,38 @@
-<script setup lang="ts">
-const login = useMutationLogin();
+<script lang="ts">
+export const description = "A two column login page with a cover image.";
+</script>
 
-const handleLogin = () => {
-    login.mutateAsync(
-        {
-            email: "email",
-            password: "password",
-        },
-        {
-            onSuccess: () => {
-                console.log("success");
-            },
-            onError: () => {
-                console.log("error");
-            },
-        },
-    );
-};
+<script setup lang="ts">
+import { GalleryVerticalEnd } from "lucide-vue-next";
+import LoginForm from "@/components/auth/LoginForm.vue";
+import authCover from "@/assets/image/authcover.jpg";
 </script>
 
 <template>
-    <div>LOGIN</div>
-    <UiButton @click="handleLogin">test</UiButton>
+    <div class="grid min-h-svh lg:grid-cols-2">
+        <div class="flex flex-col gap-4 p-6 md:p-10">
+            <div class="flex items-center justify-between">
+                <NuxtLink to="/" class="flex items-center gap-2 font-medium">
+                    <div
+                        class="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md"
+                    >
+                        <GalleryVerticalEnd class="size-4" />
+                    </div>
+                    YukBoard
+                </NuxtLink>
+                <ClientOnly>
+                    <ModeToggle />
+                </ClientOnly>
+            </div>
+            <div class="flex flex-1 items-center justify-center">
+                <div class="w-full max-w-xs">
+                    <LoginForm />
+                </div>
+            </div>
+        </div>
+        <div class="bg-muted relative hidden lg:block">
+            <div class="absolute inset-0 bg-primaryl/75"></div>
+            <img :src="authCover" alt="" class="h-full object-cover" />
+        </div>
+    </div>
 </template>

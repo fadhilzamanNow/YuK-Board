@@ -1,37 +1,26 @@
 import { AxiosError } from "axios";
 import { baseApi } from "./api";
 
-export async function postLogin(params: LoginParams) {
+export async function postLogin(params: LoginParams): Promise<LoginResponse> {
   try {
-    const response = await baseApi().post("/login", {
-      email: params.email,
-      password: params.password,
-    });
+    const response = await baseApi().post("/login", params);
     return response.data;
   } catch (err) {
-    if (err instanceof AxiosError) {
-      throw err.response.data as CustomErrorResponse<{
-        message: string;
-        code: number;
-      }>;
+    if (err instanceof AxiosError && err.response) {
+      throw err.response.data as CustomErrorResponse;
     }
+    throw err;
   }
 }
 
-export async function postRegister(params: RegisterParams) {
+export async function postRegister(params: RegisterParams): Promise<LoginResponse> {
   try {
-    const response = await baseApi().post("/register", {
-      email: params.email,
-      password: params.password,
-      name: params.name,
-    });
-    return response.data as LoginResponse;
+    const response = await baseApi().post("/register", params);
+    return response.data;
   } catch (err) {
-    if (err instanceof AxiosError) {
-      throw err.response.data as CustomErrorResponse<{
-        message: string;
-        code: number;
-      }>;
+    if (err instanceof AxiosError && err.response) {
+      throw err.response.data as CustomErrorResponse;
     }
+    throw err;
   }
 }

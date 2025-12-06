@@ -1,5 +1,38 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { GalleryVerticalEnd } from "lucide-vue-next";
+import RegisterForm from "@/components/auth/RegisterForm.vue";
+import authCover from "@/assets/image/registercover.jpg";
+</script>
 
 <template>
-    <div>Register</div>
+    <div class="grid min-h-svh lg:grid-cols-2">
+        <div class="bg-muted relative hidden lg:block">
+            <div class="absolute inset-0 bg-primary/75"></div>
+            <img
+                :src="authCover"
+                alt=""
+                class="h-full object-cover object-left"
+            />
+        </div>
+        <div class="flex flex-col gap-4 p-6 md:p-10">
+            <div class="flex items-center justify-between">
+                <NuxtLink to="/" class="flex items-center gap-2 font-medium">
+                    <div
+                        class="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md"
+                    >
+                        <GalleryVerticalEnd class="size-4" />
+                    </div>
+                    YukBoard
+                </NuxtLink>
+                <ClientOnly>
+                    <ModeToggle />
+                </ClientOnly>
+            </div>
+            <div class="flex flex-1 items-center justify-center">
+                <div class="w-full max-w-xs">
+                    <RegisterForm />
+                </div>
+            </div>
+        </div>
+    </div>
 </template>
