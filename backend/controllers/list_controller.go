@@ -120,13 +120,21 @@ func DeleteList(c *fiber.Ctx) error {
 		return c.Status(400).JSON(fiber.Map{"message": "Invalid list ID", "errors": nil})
 	}
 
-	// Check owner
+	// First check if list exists and user is owner
 	var list models.TodoList
-	if err := config.DB.First(&list, "id = ? AND owner_id = ?", listID, userID).Error; err != nil {
+	if err := config.DB.First(&list, "id = ?", listID).Error; err != nil {
+		return c.Status(404).JSON(fiber.Map{"message": "List not found", "errors": nil})
+	}
+
+	if list.OwnerID != userID {
 		return c.Status(403).JSON(fiber.Map{"message": "Access denied", "errors": nil})
 	}
 
-	config.DB.Delete(&list)
+	// Delete related records first
+	config.DB.Where("todo_list_id = ?", list.ID).Delete(&models.ListMember{})
+	config.DB.Where("todo_list_id = ?", list.ID).Delete(&models.ListInvitation{})
+	config.DB.Where("todo_list_id = ?", list.ID).Delete(&models.Task{})
+	config.DB.Unscoped().Delete(&list)
 
 	return c.JSON(fiber.Map{"message": "List deleted"})
 }
