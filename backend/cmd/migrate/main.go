@@ -1,25 +1,26 @@
 package main
 
 import (
+	"flag"
 	"log"
 
-	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
 	"yukboard/config"
 )
 
 func main() {
+	fresh := flag.Bool("fresh", false, "Drop all tables before migrating")
+	flag.Parse()
+
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found")
 	}
 
 	config.ConnectDB()
 
-	app := fiber.New()
+	if *fresh {
+		config.DropAll()
+	}
 
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.JSON(fiber.Map{"message": "Yukboard API"})
-	})
-
-	log.Fatal(app.Listen(":3000"))
+	config.Migrate()
 }
