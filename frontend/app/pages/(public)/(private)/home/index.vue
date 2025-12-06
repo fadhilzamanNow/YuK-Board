@@ -4,22 +4,30 @@ import AppSidebar from "@/components/home/AppSidebar.vue";
 import CreateListDialog from "@/components/home/CreateListDialog.vue";
 import EditListDialog from "@/components/home/EditListDialog.vue";
 import DeleteListDialog from "@/components/home/DeleteListDialog.vue";
+import InviteUserDialog from "@/components/home/InviteUserDialog.vue";
+import InvitationsDialog from "@/components/home/InvitationsDialog.vue";
 import UserDropdown from "@/components/home/UserDropdown.vue";
+import { Button } from "@/components/ui/button";
+import { UserPlus } from "lucide-vue-next";
 
 const selectedListId = ref<string>();
 const showCreateDialog = ref(false);
 const showEditDialog = ref(false);
 const showDeleteDialog = ref(false);
-const showInvitations = ref(false);
+const showInviteDialog = ref(false);
+const showInvitationsDialog = ref(false);
 const editingList = ref<TodoList>();
 const deletingList = ref<TodoList>();
+const invitingList = ref<TodoList>();
 
 const { data: meData } = useQueryMe();
 const { data: listsData, isLoading } = useQueryLists();
+const { data: invitationsData } = useQueryInvitations();
 
 const user = computed(() => meData.value?.user);
 const lists = computed(() => listsData.value?.lists ?? []);
 const selectedList = computed(() => lists.value.find((l) => l.id === selectedListId.value));
+const invitationCount = computed(() => invitationsData.value?.invitations?.length ?? 0);
 
 watch(lists, (newLists) => {
   if (newLists.length && !selectedListId.value) {
@@ -36,6 +44,11 @@ const handleDeleteList = (list: TodoList) => {
   deletingList.value = list;
   showDeleteDialog.value = true;
 };
+
+const handleInviteUser = (list: TodoList) => {
+  invitingList.value = list;
+  showInviteDialog.value = true;
+};
 </script>
 
 <template>
@@ -44,12 +57,13 @@ const handleDeleteList = (list: TodoList) => {
       :lists="lists"
       :selected-list-id="selectedListId"
       :is-loading="isLoading"
-      :invitation-count="0"
+      :invitation-count="invitationCount"
       @select-list="selectedListId = $event"
       @create-list="showCreateDialog = true"
       @edit-list="handleEditList"
       @delete-list="handleDeleteList"
-      @open-invitations="showInvitations = true"
+      @invite-user="handleInviteUser"
+      @open-invitations="showInvitationsDialog = true"
     />
     <SidebarInset>
       <header class="flex h-14 items-center justify-between border-b px-4">
@@ -68,18 +82,25 @@ const handleDeleteList = (list: TodoList) => {
         <div v-if="!selectedListId" class="text-muted-foreground text-center py-20">
           Pilih atau buat daftar tugas untuk memulai
         </div>
-        <div v-else class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div class="bg-muted/50 rounded-lg p-4">
-            <h2 class="font-semibold mb-4">Todo</h2>
-            <p class="text-muted-foreground text-sm">Belum ada tugas</p>
+        <div v-else>
+          <div class="flex justify-start mb-4">
+            <Button size="sm" variant="outline" @click="handleInviteUser(selectedList!)">
+              <UserPlus class="size-4 mr-2" /> Undang
+            </Button>
           </div>
-          <div class="bg-muted/50 rounded-lg p-4">
-            <h2 class="font-semibold mb-4">In Progress</h2>
-            <p class="text-muted-foreground text-sm">Belum ada tugas</p>
-          </div>
-          <div class="bg-muted/50 rounded-lg p-4">
-            <h2 class="font-semibold mb-4">Done</h2>
-            <p class="text-muted-foreground text-sm">Belum ada tugas</p>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-muted/50 rounded-lg p-4">
+              <h2 class="font-semibold mb-4">Todo</h2>
+              <p class="text-muted-foreground text-sm">Belum ada tugas</p>
+            </div>
+            <div class="bg-muted/50 rounded-lg p-4">
+              <h2 class="font-semibold mb-4">In Progress</h2>
+              <p class="text-muted-foreground text-sm">Belum ada tugas</p>
+            </div>
+            <div class="bg-muted/50 rounded-lg p-4">
+              <h2 class="font-semibold mb-4">Done</h2>
+              <p class="text-muted-foreground text-sm">Belum ada tugas</p>
+            </div>
           </div>
         </div>
       </main>
@@ -88,5 +109,7 @@ const handleDeleteList = (list: TodoList) => {
     <CreateListDialog v-model:open="showCreateDialog" />
     <EditListDialog v-model:open="showEditDialog" :list="editingList" />
     <DeleteListDialog v-model:open="showDeleteDialog" :list="deletingList" @deleted="selectedListId = undefined" />
+    <InviteUserDialog v-model:open="showInviteDialog" :list="invitingList" />
+    <InvitationsDialog v-model:open="showInvitationsDialog" />
   </SidebarProvider>
 </template>
