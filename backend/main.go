@@ -6,6 +6,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
 	"yukboard/config"
+	"yukboard/routes"
 )
 
 func main() {
@@ -17,9 +18,7 @@ func main() {
 
 	app := fiber.New()
 
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.JSON(fiber.Map{"message": "Yukboard API"})
-	})
+	routes.Setup(app)
 
 	log.Fatal(app.Listen(":3000"))
 }
