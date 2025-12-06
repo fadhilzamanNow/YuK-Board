@@ -25,4 +25,11 @@ func Setup(app *fiber.App) {
 	auth.Get("/lists/:id", controllers.GetList)
 	auth.Put("/lists/:id", controllers.UpdateList)
 	auth.Delete("/lists/:id", controllers.DeleteList)
+
+	// Invitations
+	auth.Post("/lists/:id/invite", controllers.InviteUser)
+	auth.Get("/invitations", controllers.GetMyInvitations)
+	auth.Post("/invitations/:id/accept", controllers.AcceptInvitation)
+	auth.Post("/invitations/:id/decline", controllers.DeclineInvitation)
+	auth.Delete("/invitations/:id", controllers.CancelInvitation)
 }
